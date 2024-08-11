@@ -14,6 +14,7 @@
 #include "IndexBuffer.h"
 #include "VertexArray.h"
 #include "Shader.h"
+#include "OBJModel.h"
 
 int main(void)
 {
@@ -24,7 +25,7 @@ int main(void)
         return -1;
 
     /* Create a windowed mode window and its OpenGL context */
-    window = glfwCreateWindow(640, 480, "Assignment 2 - A moving Triangle!", NULL, NULL);
+    window = glfwCreateWindow(640, 480, "Assignment 3 - A moving Contigo!", NULL, NULL);
     if (!window)
     {
         glfwTerminate();
@@ -39,84 +40,103 @@ int main(void)
     glfwMakeContextCurrent(window);
 
     glfwSwapInterval(1);
+    glDisable(GL_CULL_FACE);
+    glClearColor(0.5f, 0.7f, 1.0f, 1.0f);
 
     if (glewInit() != GLEW_OK)
     {
         std::cout << "ERROR: GLEW INIT" << std::endl;
     }
 
+    // Extracting the .OBJ
+    OBJModel objModel;
+
+    objModel.LoadFromFile("res/OBJ/contigo.obj");
+
+    std::vector<float> vertices = objModel.GetVertexData();
+    int vertexCount = objModel.GetVertexCount();
+
     {
-        float positions[] = {
-            -0.5f, -0.5f, //0
-             0.5f, -0.5f, //1
-             0.0f,  0.5f, //2
-        };
 
-        unsigned int indices[] = {
+      std::vector<unsigned int> indices;
+      for (int i = 0; i < vertexCount; i++) {
+        indices.push_back(i);
+      }
 
-            0, 1, 2
-        };
+      VertexArray va;
+      VertexBuffer vb(&vertices[0], vertices.size() * sizeof(float)); // 3 is number of unrepeating verticies 
 
-        VertexArray va;
-        VertexBuffer vb(positions, 3 * 2 * sizeof(float)); // 3 is number of unrepeating verticies 
+      VertexBufferLayout layout;
+      layout.Push<float>(3); // 3 is number of coordinates a position has
+      layout.Push<float>(2); // 3 is number of coordinates a texture has
+      layout.Push<float>(3); // 3 is number of coordinates a normal has
+      va.AddBuffer(vb, layout);
 
-        VertexBufferLayout layout;
-        layout.Push<float>(2); // 2 is number of coordinates a point has
-        va.AddBuffer(vb, layout);
+      IndexBuffer ib(&indices[0], vertexCount);
 
-        IndexBuffer ib(indices, 3);
+      //glm::mat4 proj = glm::ortho(-2.0f, 2.0f, -1.5f, 1.5f, -1.0f, 1.0f); // to allow more possible movement
+      //glm::mat4 model = glm::mat4(1.0f);
+      //glm::mat4 mvp = proj * model;
 
-        glm::mat4 proj = glm::ortho(-2.0f, 2.0f, -1.5f, 1.5f, -1.0f, 1.0f); // to allow more possible movement
-        glm::mat4 model = glm::mat4(1.0f);
-        glm::mat4 mvp = proj * model;
+      glm::mat4 model = glm::mat4(1.0f); // Identity matrix for the model, or apply transformations as needed
+      glm::mat4 view = glm::translate(glm::mat4(1.0f), glm::vec3(0, 0, -3)); // Move the camera back a bit
+      glm::mat4 projection = glm::perspective(glm::radians(45.0f), 4.0f / 3.0f, 0.1f, 100.0f); // Perspective projection
 
-        Shader shader("res/shaders/Basic.shader");
-        shader.Bind(); // Binding my shader
-        shader.SetUniform4f("u_color", 0.2f, 0.3f, 0.3f, 1.0f); // set data in the shader and retreiving the location of this color uniform
-        shader.SetUniformMat4f("u_MVP", mvp); // set model view projection
+      glm::mat4 mvp = projection * view * model; // Order: Model -> View -> Projection
 
-        va.UnBind();
-        vb.Unbind();
-        ib.Unbind();
-        shader.UnBind();
+      Shader shader("res/shaders/Basic.shader");
 
-        Renderer renderer;
+      shader.Bind(); // Binding my shader
+      shader.SetUniform4f("u_color", 0.2f, 0.3f, 0.3f, 1.0f); // set data in the shader and retreiving the location of this color uniform
+      shader.SetUniformMat4f("u_MVP", mvp); // set model view projection
 
-        float r = 0.0f;
-        float increment = 0.05f;
+      va.UnBind();
+      vb.Unbind();
+      ib.Unbind();
+      shader.UnBind();
 
-        /* Loop until the user closes the window */
-        while (!glfwWindowShouldClose(window))
-        {
-            // Process user inputs
-            renderer.ProcessUserInput(window, model);
+      Renderer renderer;
 
-            // update projection matrix after the transformation
-            mvp = proj * model; 
+      float r = 0.0f;
+      float increment = 0.05f;
+
+      /*Controls Display*/
+      std::cout << " These are the controls to move the Contigo: " << std::endl
+                        << "    W for up" << std::endl
+                        << "    A for left" << std::endl
+                        << "    S for down" << std::endl
+                        << "    D for right" << std::endl
+                        << "    Q for rotate Anti-CLK wise" << std::endl
+                        << "    E for rotate CLK wise" << std::endl
+                        << "    R for scale up" << std::endl
+                        << "    F for scale down" << std::endl;
+
+      glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+      /* Loop until the user closes the window */
+      while (!glfwWindowShouldClose(window))
+      {
+          // Process user inputs
+          renderer.ProcessUserInput(window, model);
+
+          // update projection matrix after the transformation
+          mvp = projection * model * view;
       
-            // Rendering Here 
-            renderer.Clear();
+          // Rendering Here 
+          renderer.Clear();
 
-            shader.Bind(); // Binding shader
-            shader.SetUniform4f("u_color", r, 0.3f, 0.3f, 1.0f); // r is added to change the color every iteration
-            shader.SetUniformMat4f("u_MVP", mvp); // update projection in the shader
+          shader.Bind(); // Binding shader
+          shader.SetUniformMat4f("u_MVP", mvp); // update projection in the shader
 
 
-            renderer.Draw(va, ib, shader); // Making the openGL draw call 
-            
-            if (r > 1.0f)
-                increment = -0.05f;
-            else if (r < 0.0f)
-                increment = 0.05f;
+          renderer.Draw(va, ib, shader); // Making the openGL draw call 
 
-            r += increment;
+          /* Swap front and back buffers */
+          GLCall(glfwSwapBuffers(window));
 
-            /* Swap front and back buffers */
-            GLCall(glfwSwapBuffers(window));
+          /* Poll for and process events */
+          GLCall(glfwPollEvents());
 
-            /* Poll for and process events */
-            GLCall(glfwPollEvents());
-        }
+      }
 
     } // scope added to terminate the program when the window is closed
 
