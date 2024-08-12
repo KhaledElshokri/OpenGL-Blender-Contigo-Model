@@ -74,13 +74,10 @@ int main(void)
 
       IndexBuffer ib(&indices[0], vertexCount);
 
-      //glm::mat4 proj = glm::ortho(-2.0f, 2.0f, -1.5f, 1.5f, -1.0f, 1.0f); // to allow more possible movement
-      //glm::mat4 model = glm::mat4(1.0f);
-      //glm::mat4 mvp = proj * model;
-
       glm::mat4 model = glm::mat4(1.0f); // Identity matrix for the model, or apply transformations as needed
       glm::mat4 view = glm::translate(glm::mat4(1.0f), glm::vec3(0, 0, -3)); // Move the camera back a bit
-      glm::mat4 projection = glm::perspective(glm::radians(45.0f), 4.0f / 3.0f, 0.1f, 100.0f); // Perspective projection
+      view = glm::rotate(view, glm::radians(180.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+      glm::mat4 projection = glm::perspective(glm::radians(45.0f), 640.0f / 480.0f, 0.1f, 100.0f); // Perspective projection
 
       glm::mat4 mvp = projection * view * model; // Order: Model -> View -> Projection
 
@@ -96,9 +93,6 @@ int main(void)
       shader.UnBind();
 
       Renderer renderer;
-
-      float r = 0.0f;
-      float increment = 0.05f;
 
       /*Controls Display*/
       std::cout << " These are the controls to move the Contigo: " << std::endl
@@ -119,7 +113,7 @@ int main(void)
           renderer.ProcessUserInput(window, model);
 
           // update projection matrix after the transformation
-          mvp = projection * model * view;
+          mvp = projection * view * model;
       
           // Rendering Here 
           renderer.Clear();
