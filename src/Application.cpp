@@ -25,7 +25,7 @@ int main(void)
         return -1;
 
     /* Create a windowed mode window and its OpenGL context */
-    window = glfwCreateWindow(640, 480, "Assignment 3 - A moving Contigo!", NULL, NULL);
+    window = glfwCreateWindow(1280, 720, "Assignment 3 - A moving Contigo!", NULL, NULL);
     if (!window)
     {
         glfwTerminate();
@@ -77,7 +77,8 @@ int main(void)
       glm::mat4 model = glm::mat4(1.0f); // Identity matrix for the model, or apply transformations as needed
       glm::mat4 view = glm::translate(glm::mat4(1.0f), glm::vec3(0, 0, -3)); // Move the camera back a bit
       view = glm::rotate(view, glm::radians(180.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-      glm::mat4 projection = glm::perspective(glm::radians(45.0f), 640.0f / 480.0f, 0.1f, 100.0f); // Perspective projection
+      //glm::mat4 projection = glm::perspective(glm::radians(45.0f), 1280.0f / 720.0f, 0.1f, 100.0f); // Perspective projection
+      glm::mat4 projection = glm::ortho(-20.0f, 20.0f, -15.0f, 15.0f, -10.0f, 10.0f); // to allow more possible movement
 
       glm::mat4 mvp = projection * view * model; // Order: Model -> View -> Projection
 
@@ -103,7 +104,11 @@ int main(void)
                         << "    Q for rotate Anti-CLK wise" << std::endl
                         << "    E for rotate CLK wise" << std::endl
                         << "    R for scale up" << std::endl
-                        << "    F for scale down" << std::endl;
+                        << "    F for scale down" << std::endl
+                        << "    Z for rotate CLK wise on the Y axis" << std::endl
+                        << "    X for rotate Anti-CLK wise on the Y axis" << std::endl
+                        << "    C for rotate CLK wise on the X axis" << std::endl
+                        << "    V for rotate Anti-CLK wise on the X axis" << std::endl;
 
       glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
       /* Loop until the user closes the window */

@@ -48,6 +48,14 @@ void Renderer::ProcessUserInput(GLFWwindow* window, glm::mat4& model)
     model = glm::rotate(model, glm::radians(30.0f), glm::vec3(0.0f, 0.0f, 1.0f));
   if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS)
     model = glm::rotate(model, -glm::radians(30.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+  if (glfwGetKey(window, GLFW_KEY_Z) == GLFW_PRESS)
+    model = glm::rotate(model, glm::radians(10.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+  if (glfwGetKey(window, GLFW_KEY_X) == GLFW_PRESS)
+    model = glm::rotate(model, -glm::radians(10.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+  if (glfwGetKey(window, GLFW_KEY_C) == GLFW_PRESS)
+    model = glm::rotate(model, glm::radians(10.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+  if (glfwGetKey(window, GLFW_KEY_V) == GLFW_PRESS)
+    model = glm::rotate(model, -glm::radians(10.0f), glm::vec3(1.0f, 0.0f, 0.0f));
   if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS)
     model = glm::scale(model, glm::vec3(1.1f, 1.1f, 1.0f));
   if (glfwGetKey(window, GLFW_KEY_F) == GLFW_PRESS)
